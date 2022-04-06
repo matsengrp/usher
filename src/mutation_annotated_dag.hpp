@@ -30,12 +30,13 @@
 namespace Mutation_Annotated_DAG {
 
 class Edge;
+using EdgeVector = std::vector<Edge *>;
 
 class Node {
   public:
     size_t id;
-    std::vector<Edge *> rootward_edges;
-    std::vector<Edge *> leafward_edges;
+    EdgeVector rootward_edges;
+    std::vector<EdgeVector *> clades;
 
     bool is_leaf();
     bool is_root();
