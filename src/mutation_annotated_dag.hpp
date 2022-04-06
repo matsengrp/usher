@@ -34,7 +34,6 @@ namespace Mutation_Annotated_DAG {
 
 Mutation_Annotated_DAG::DAG* mat_to_dag(MAT::Tree* tree)
 
-
 class Edge;
 using EdgeVector = std::vector<Edge *>;
 
@@ -45,9 +44,13 @@ class Node {
     std::vector<EdgeVector *> clades;
 
     bool is_leaf();
-    bool is_root();
+    bool is_ua_node();
+    std::vector<MAD::Node> children();
 
-    Node();
+    bool add_edge(size_t clade_idx, MAD::Edge* edge);
+    void add_parent_edge(MAD::Edge* edge);
+
+    Node(std::vector<EdgeVector *> clades, );
 
 };
 
@@ -59,6 +62,8 @@ class Edge {
 
     void add_mutation(Mutation_Annotated_Tree::Mutation mut);
     void clear_mutations();
+
+    Edge(MAD::Node * parent, MAD::Node * child, std::vector<MAT::Mutation> mutations);
 };
 
 class DAG {
