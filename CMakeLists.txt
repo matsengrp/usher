@@ -76,6 +76,10 @@ if(DEFINED Protobuf_PATH)
         ${MATUTIL_SRCS}
         )
 
+    add_executable(madUtils
+        src/mutation_annotated_dag.cpp
+        )
+
     add_executable(ripples
         src/mutation_annotated_tree.cpp
         src/usher_mapper.cpp
@@ -179,6 +183,11 @@ if(DEFINED Protobuf_PATH)
 
     protobuf_generate(
         LANGUAGE cpp
+        TARGET madUtils
+        PROTOS parsimony.proto)
+
+    protobuf_generate(
+        LANGUAGE cpp
         TARGET matOptimize
         PROTOS parsimony.proto)
 
@@ -237,6 +246,10 @@ else()
         ${PROTO_HDRS}
         ${TAXO_SRCS}
         ${TAXO_HDRS}
+        )
+
+    add_executable(madUtils
+        src/mutation_annotated_dag.cpp
         )
 
     add_executable(ripples
@@ -369,7 +382,7 @@ TARGET_LINK_LIBRARIES(ripples-fast PRIVATE stdc++  ${Boost_LIBRARIES} ${TBB_IMPO
 if(USHER_SERVER)
     TARGET_COMPILE_OPTIONS(usher_server PRIVATE -DTBB_SUPPRESS_DEPRECATED_MESSAGES)
     TARGET_LINK_LIBRARIES(usher_server PRIVATE stdc++  ${Boost_LIBRARIES} ${TBB_IMPORTED_TARGETS} ${Protobuf_LIBRARIES} ZLIB::ZLIB) # OpenMP::OpenMP_CXX)
-    install(TARGETS usher matUtils matOptimize ripples usher_server DESTINATION bin)
+    install(TARGETS usher madUtils matUtils matOptimize ripples usher_server DESTINATION bin)
 else()
-    install(TARGETS usher matUtils matOptimize ripples DESTINATION bin)
+    install(TARGETS usher madUtils matUtils matOptimize ripples DESTINATION bin)
 endif()

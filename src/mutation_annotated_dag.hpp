@@ -10,24 +10,30 @@
 #include <unordered_set>
 #include <algorithm>
 #include <cassert>
-#include <tbb/flow_graph.h>
-#include <tbb/reader_writer_lock.h>
-#include <tbb/scalable_allocator.h>
-#include <tbb/task_scheduler_init.h>
-#include <tbb/blocked_range.h>
-#include <tbb/task_group.h>
-#include <tbb/tbb.h>
-#include <tbb/mutex.h>
-#include "parsimony.pb.h"
-#include "Instrumentor.h"
+#include "usher_common.hpp"
+/* #include <tbb/flow_graph.h> */
+/* #include <tbb/reader_writer_lock.h> */
+/* #include <tbb/scalable_allocator.h> */
+/* #include <tbb/task_scheduler_init.h> */
+/* #include <tbb/blocked_range.h> */
+/* #include <tbb/task_group.h> */
+/* #include <tbb/tbb.h> */
+/* #include <tbb/mutex.h> */
+/* #include "parsimony.pb.h" */
+/* #include "Instrumentor.h" */
 
-#if SAVE_PROFILE == 1
-#  define TIMEIT() InstrumentationTimer timer##__LINE__(__PRETTY_FUNCTION__);
-#else
-#  define TIMEIT()
-#endif
+/* #if SAVE_PROFILE == 1 */
+/* #  define TIMEIT() InstrumentationTimer timer##__LINE__(__PRETTY_FUNCTION__); */
+/* #else */
+/* #  define TIMEIT() */
+/* #endif */
+
+namespace MAT = Mutation_Annotated_Tree;
 
 namespace Mutation_Annotated_DAG {
+
+Mutation_Annotated_DAG::DAG* mat_to_dag(MAT::Tree* tree)
+
 
 class Edge;
 using EdgeVector = std::vector<Edge *>;
@@ -67,6 +73,8 @@ class DAG {
     }
     Node *root;
 
+    void merge(Mutation_Annotated_DAG::DAG* newdag)
+    Mutation_Annotated_DAG::DAG* sample()
     // tbb::concurrent_unordered_map<std::string, std::vector<std::string>>
     // condensed_nodes; tbb::concurrent_unordered_set<std::string>
     // condensed_leaves;
