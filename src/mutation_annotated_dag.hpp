@@ -11,15 +11,15 @@
 #include <algorithm>
 #include <cassert>
 #include "usher_common.hpp"
-/* #include <tbb/flow_graph.h> */
-/* #include <tbb/reader_writer_lock.h> */
-/* #include <tbb/scalable_allocator.h> */
-/* #include <tbb/task_scheduler_init.h> */
-/* #include <tbb/blocked_range.h> */
-/* #include <tbb/task_group.h> */
-/* #include <tbb/tbb.h> */
-/* #include <tbb/mutex.h> */
-/* #include "parsimony.pb.h" */
+#include <tbb/flow_graph.h>
+#include <tbb/reader_writer_lock.h>
+#include <tbb/scalable_allocator.h>
+#include <tbb/task_scheduler_init.h>
+#include <tbb/blocked_range.h>
+#include <tbb/task_group.h>
+#include <tbb/tbb.h>
+#include <tbb/mutex.h>
+#include "parsimony.pb.h"
 /* #include "Instrumentor.h" */
 
 /* #if SAVE_PROFILE == 1 */
@@ -32,7 +32,6 @@ namespace MAT = Mutation_Annotated_Tree;
 
 namespace Mutation_Annotated_DAG {
 
-Mutation_Annotated_DAG::DAG* mat_to_dag(MAT::Tree* tree)
 
 class Edge;
 using EdgeVector = std::vector<Edge *>;
@@ -45,13 +44,16 @@ class Node {
 
     bool is_leaf();
     bool is_ua_node();
-    std::vector<MAD::Node> children();
+    std::vector<Node> children();
 
-    bool add_edge(size_t clade_idx, MAD::Edge* edge);
-    void add_parent_edge(MAD::Edge* edge);
+    void add_child_edge(size_t clade_idx, Edge* edge_p);
+    void add_parent_edge(Edge* edge);
+    void remove_parent_edge(Edge* edge);
+    std::set<MAT::Mutation> get_muts_rel_reference();
+    std::string get_seq();
 
-    Node(std::vector<EdgeVector *> clades, );
-
+    Node();
+    Node(std::vector<EdgeVector *> clades);
 };
 
 class Edge {
@@ -63,7 +65,9 @@ class Edge {
     void add_mutation(Mutation_Annotated_Tree::Mutation mut);
     void clear_mutations();
 
-    Edge(MAD::Node * parent, MAD::Node * child, std::vector<MAT::Mutation> mutations);
+    Edge();
+    Edge(Node * parent, Node * child, std::vector<MAT::Mutation> mutations);
+    ~Edge();
 };
 
 class DAG {
@@ -71,18 +75,17 @@ class DAG {
     std::unordered_map<size_t, Node *> all_nodes;
 
   public:
-    Tree() {
-        root = NULL;
-        curr_internal_node = 0;
-        all_nodes.clear();
-    }
+    std::string reference_sequence;
     Node *root;
 
-    void merge(Mutation_Annotated_DAG::DAG* newdag)
-    Mutation_Annotated_DAG::DAG* sample()
-    // tbb::concurrent_unordered_map<std::string, std::vector<std::string>>
-    // condensed_nodes; tbb::concurrent_unordered_set<std::string>
-    // condensed_leaves;
+    void merge(Mutation_Annotated_DAG::DAG* newdag);
+    Mutation_Annotated_DAG::DAG* sample();
+
+    DAG(Node *);
+    DAG(Node *, std::string);
 };
+
+Mutation_Annotated_DAG::DAG mat_to_dag(MAT::Tree&);
+Mutation_Annotated_DAG::DAG load_mat_protobuf(const std::string&);
 } // namespace Mutation_Annotated_DAG
 
