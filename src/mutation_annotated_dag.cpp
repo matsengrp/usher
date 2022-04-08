@@ -89,15 +89,15 @@ Mutation_Annotated_DAG::Node::Node(std::vector<EdgeVector *> clades){
     this->clades = clades;
 }
 
-bool Mutation_Annotated_DAG::Node::is_leaf(){
+bool Mutation_Annotated_DAG::Node::is_leaf() const{
     return clades.empty();
 }
 
-bool Mutation_Annotated_DAG::Node::is_ua_node(){
+bool Mutation_Annotated_DAG::Node::is_ua_node() const{
     return rootward_edges.empty();
 }
 
-std::vector<Node *> Mutation_Annotated_DAG::Node::children(){
+std::vector<Node *> Mutation_Annotated_DAG::Node::children() const{
     //could I return some sort of iterator instead of initializing a whole new
     //vector for this?
     std::vector<Node *> child_list;
@@ -149,7 +149,7 @@ std::set<MAT::Mutation> Mutation_Annotated_DAG::Node::get_muts_rel_reference(){
     return muts;
 }
 
-std::string Mutation_Annotated_DAG::Node::get_seq(){
+std::string Mutation_Annotated_DAG::Node::get_seq() const{
     throw std::runtime_error("Not Implemented");
     return std::string();
 }

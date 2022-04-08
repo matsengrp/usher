@@ -42,16 +42,16 @@ class Node {
     EdgeVector rootward_edges;
     std::vector<EdgeVector *> clades;
 
-    bool is_leaf();
-    bool is_ua_node();
-    std::vector<Node *> children();
+    bool is_leaf() const;
+    bool is_ua_node() const;
+    std::vector<Node *> children() const;
 
     void add_child_edge(Edge*);
     void add_child_edge(size_t clade_idx, Edge*);
     void add_parent_edge(Edge* edge);
     void remove_parent_edge(Edge* edge);
     std::set<MAT::Mutation> get_muts_rel_reference();
-    std::string get_seq();
+    std::string get_seq() const;
 
     Node();
     Node(std::vector<EdgeVector *> clades);
@@ -84,7 +84,7 @@ class DAG {
 
     void merge(DAG* newdag);
     std::vector<Node *> postorder();
-    DAG* sample();
+    DAG* sample() const;
 
     DAG(Node *);
     DAG(Node *, std::string);
