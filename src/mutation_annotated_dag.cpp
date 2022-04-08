@@ -8,6 +8,9 @@ int main(int argc, char** argv) {
     std::cout << "loading protobuf" << argv[1] << std::endl;
     DAG history = load_mat_protobuf(argv[1]);
     std::cout << "loaded protobuf" << argv[1] << std::endl;
+    std::vector<Node*> post_order = history.postorder();
+    std::cout << "DAG has " << post_order.size() << " nodes" << std::endl;
+    std::cout << "id of ua node is " << history.root->id << "" << std::endl;
     return 0;
 }
 
@@ -17,6 +20,7 @@ DAG Mutation_Annotated_DAG::mat_to_dag(MAT::Tree & tree) {
     // new for each such object if I want it to not be deleted on return?
     auto dag_node_indices = new std::unordered_map<size_t, Node *>;
     std::vector<Mutation_Annotated_Tree::Node*> tree_dfs = tree.depth_first_expansion();
+    std::cout << "tree has " << tree_dfs.size() << " nodes" << std::endl;
     const size_t n_nodes = tree_dfs.size();
     Node* dag_dfs[n_nodes];
     // build dag nodes from tree nodes, starting with leaves
@@ -50,6 +54,23 @@ DAG Mutation_Annotated_DAG::mat_to_dag(MAT::Tree & tree) {
     return newdag;
 }
 
+std::vector<Node *> Mutation_Annotated_DAG::DAG::postorder(){
+    std::vector<Node *> visit_order;
+    std::unordered_set<Node *> visited;
+    DAG::postorder_helper(root, visited, visit_order);
+    return visit_order;
+}
+
+void Mutation_Annotated_DAG::DAG::postorder_helper(Node* current_node, std::unordered_set<Node*> & visited, std::vector<Node *> & visit_order){
+    if (not visited.count(current_node)){
+        for (auto child : current_node->children()){
+            DAG::postorder_helper(child, visited, visit_order);
+        }
+        current_node->id = visit_order.size();
+        visit_order.push_back(current_node);
+    }
+}
+
 DAG Mutation_Annotated_DAG::load_mat_protobuf(const std::string& protobuf_filename){
     MAT::Tree tree = MAT::load_mutation_annotated_tree(protobuf_filename);
     return mat_to_dag(tree);
@@ -75,6 +96,19 @@ bool Mutation_Annotated_DAG::Node::is_leaf(){
 bool Mutation_Annotated_DAG::Node::is_ua_node(){
     return rootward_edges.empty();
 }
+
+std::vector<Node *> Mutation_Annotated_DAG::Node::children(){
+    //could I return some sort of iterator instead of initializing a whole new
+    //vector for this?
+    std::vector<Node *> child_list;
+    for (auto clade : clades){
+        for (auto child_edge : *clade){
+            child_list.push_back(child_edge->child);
+        }
+    }
+    return child_list;
+}
+
 
 void Mutation_Annotated_DAG::Node::add_child_edge(Edge* edge){
     if (clades.size() > 1){

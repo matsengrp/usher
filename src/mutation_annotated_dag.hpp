@@ -44,7 +44,7 @@ class Node {
 
     bool is_leaf();
     bool is_ua_node();
-    std::vector<Node> children();
+    std::vector<Node *> children();
 
     void add_child_edge(Edge*);
     void add_child_edge(size_t clade_idx, Edge*);
@@ -72,6 +72,9 @@ class Edge {
 };
 
 class DAG {
+  private:
+    void postorder_helper(Node*, std::unordered_set<Node *> &, std::vector<Node *> &);
+
   public:
     //made this public to allow setting in mat_to_dag. I'm sure there's a
     //better way.
