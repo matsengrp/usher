@@ -46,7 +46,8 @@ class Node {
     bool is_ua_node();
     std::vector<Node> children();
 
-    void add_child_edge(size_t clade_idx, Edge* edge_p);
+    void add_child_edge(Edge*);
+    void add_child_edge(size_t clade_idx, Edge*);
     void add_parent_edge(Edge* edge);
     void remove_parent_edge(Edge* edge);
     std::set<MAT::Mutation> get_muts_rel_reference();
@@ -71,14 +72,15 @@ class Edge {
 };
 
 class DAG {
-  private:
-    std::unordered_map<size_t, Node *> all_nodes;
-
   public:
+    //made this public to allow setting in mat_to_dag. I'm sure there's a
+    //better way.
+    std::unordered_map<size_t, Node *> all_nodes;
     std::string reference_sequence;
     Node *root;
 
     void merge(DAG* newdag);
+    std::vector<Node *> postorder();
     DAG* sample();
 
     DAG(Node *);

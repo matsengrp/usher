@@ -1,25 +1,30 @@
 #include <stdexcept>
+#include <iostream>
 #include "mutation_annotated_dag.hpp"
 
 using namespace Mutation_Annotated_DAG;
 
 int main(int argc, char** argv) {
-    DAG history = load_mat_protobuf(argv[0]);
+    std::cout << "loading protobuf" << argv[1] << std::endl;
+    DAG history = load_mat_protobuf(argv[1]);
+    std::cout << "loaded protobuf" << argv[1] << std::endl;
+    return 0;
 }
 
 DAG Mutation_Annotated_DAG::mat_to_dag(MAT::Tree & tree) {
     // I understand that although I will be returning the DAG by value, since
     // it contains pointers to objects initialized in this scope, I must use
     // new for each such object if I want it to not be deleted on return?
-    std::vector<Mutation_Annotated_Tree::Node*> tree_dfs = tree.depth_first_expansion(NULL);
+    auto dag_node_indices = new std::unordered_map<size_t, Node *>;
+    std::vector<Mutation_Annotated_Tree::Node*> tree_dfs = tree.depth_first_expansion();
     const size_t n_nodes = tree_dfs.size();
     Node* dag_dfs[n_nodes];
     // build dag nodes from tree nodes, starting with leaves
-    for (auto node : tree_dfs){
+    for (auto node = tree_dfs.rbegin(); node != tree_dfs.rend(); node++){
         std::vector<EdgeVector *>* clades = new std::vector<EdgeVector *>;
         Node * p_newnode = new Node;
         // build child edges, one per clade
-        for (auto child : node->children){
+        for (Mutation_Annotated_Tree::Node * child : (*node)->children){
             // DFS implies dag_dfs will contain an already constructed node at
             // this index
             Edge * child_edge = new Edge(p_newnode, dag_dfs[child->dfs_idx], child->mutations);
@@ -28,11 +33,20 @@ DAG Mutation_Annotated_DAG::mat_to_dag(MAT::Tree & tree) {
             clades->push_back(clade);
         }
         p_newnode->clades = *clades;
-        dag_dfs[node->dfs_idx] = p_newnode;
+        size_t old_idx = (*node)->dfs_idx;
+        dag_dfs[old_idx] = p_newnode;
+        p_newnode->id = old_idx + 1;
+        (*dag_node_indices)[old_idx + 1] = p_newnode;
     }
-    // TODO need to add a UA node, and compute the right mutations from
-    // some passed root sequence.
-    DAG newdag(dag_dfs[0]);
+    Node * ua_node = new Node;
+    ua_node->id = 0;
+    (*dag_node_indices)[0] = ua_node;
+    std::vector<MAT::Mutation> mutations;
+    // TODO compute correct mutations rel ua node sequence
+    Edge * ua_child_edge = new Edge(nullptr, dag_dfs[0], mutations);
+    ua_node->add_child_edge(ua_child_edge);
+    DAG newdag(ua_node);
+    newdag.all_nodes = *dag_node_indices;
     return newdag;
 }
 
@@ -60,6 +74,15 @@ bool Mutation_Annotated_DAG::Node::is_leaf(){
 
 bool Mutation_Annotated_DAG::Node::is_ua_node(){
     return rootward_edges.empty();
+}
+
+void Mutation_Annotated_DAG::Node::add_child_edge(Edge* edge){
+    if (clades.size() > 1){
+        throw std::invalid_argument("To add an edge to a node with more than one clade you must specify a clade index.");
+    } else if (clades.empty()){
+        clades.push_back(new EdgeVector);
+    } // clades contains one EdgeVector now.
+    clades[0]->push_back(edge);
 }
 
 void Mutation_Annotated_DAG::Node::add_child_edge(size_t clade_idx, Edge* edge){
