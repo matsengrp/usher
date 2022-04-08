@@ -78,6 +78,9 @@ if(DEFINED Protobuf_PATH)
 
     add_executable(madUtils
         src/mutation_annotated_dag.cpp
+        src/mutation_annotated_tree.cpp
+        src/usher_mapper.cpp
+        src/usher_common.cpp
         )
 
     add_executable(ripples
@@ -250,6 +253,11 @@ else()
 
     add_executable(madUtils
         src/mutation_annotated_dag.cpp
+        src/mutation_annotated_tree.cpp
+        src/usher_mapper.cpp
+        src/usher_common.cpp
+        ${PROTO_SRCS}
+        ${PROTO_HDRS}
         )
 
     add_executable(ripples

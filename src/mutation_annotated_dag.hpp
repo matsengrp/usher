@@ -20,7 +20,7 @@
 #include <tbb/tbb.h>
 #include <tbb/mutex.h>
 #include "parsimony.pb.h"
-/* #include "Instrumentor.h" */
+#include "Instrumentor.h"
 
 /* #if SAVE_PROFILE == 1 */
 /* #  define TIMEIT() InstrumentationTimer timer##__LINE__(__PRETTY_FUNCTION__); */
@@ -78,14 +78,14 @@ class DAG {
     std::string reference_sequence;
     Node *root;
 
-    void merge(Mutation_Annotated_DAG::DAG* newdag);
-    Mutation_Annotated_DAG::DAG* sample();
+    void merge(DAG* newdag);
+    DAG* sample();
 
     DAG(Node *);
     DAG(Node *, std::string);
 };
 
-Mutation_Annotated_DAG::DAG mat_to_dag(MAT::Tree&);
-Mutation_Annotated_DAG::DAG load_mat_protobuf(const std::string&);
+DAG mat_to_dag(MAT::Tree&);
+DAG load_mat_protobuf(const std::string&);
 } // namespace Mutation_Annotated_DAG
 
