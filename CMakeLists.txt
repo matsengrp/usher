@@ -22,6 +22,10 @@ if ("${VERSION_PATCH}" MATCHES "[0-9]+")
 endif()
 message(STATUS "${usher_VERSION}")
 
+if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+  add_link_options("-Wl,--undefined-version")
+endif()
+
 include(FetchContent)
 set(TBB_VERSION "v2022.2.0")
 FetchContent_Declare(oneTBB
@@ -50,6 +54,13 @@ if(DEFINED Protobuf_PATH)
     find_package(Protobuf 3.0.0...<4.0.0 REQUIRED HINTS ${Protobuf_PATH}) 
 else()
     find_package(Protobuf 3.0.0...<4.0.0 REQUIRED) 
+    find_package(absl)
+    if(absl_FOUND)
+     link_libraries(
+        absl::log
+        absl::log_internal_check_impl
+      )
+    endif()
 endif()
 
 # Print version messages
@@ -493,6 +504,13 @@ if(DEFINED Protobuf_PATH)
             )
         endif()
     endif()
+
+add_custom_target(proto-patch ALL
+  COMMAND ${PROJECT_SOURCE_DIR}/patch-protobuf.sh
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  DEPENDS ${CMAKE_BINARY_DIR}/mutation_detailed.pb.cc
+  COMMENT "Patching protobuf generated files"
+)
 
 if(SAVE_PROFILE)
     if(DEBUG)

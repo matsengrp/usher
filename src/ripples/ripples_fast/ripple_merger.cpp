@@ -43,12 +43,12 @@ static void push_val(std::vector<int> &filtered_idx,
     }
 }
 static unsigned short min_8(__v8h in) {
-    __v8h temp1=(__v8h)__builtin_ia32_pshufd((__v4i)in,0x4e);
-    auto min1=__builtin_ia32_pminsw128(temp1,in);
-    temp1=__builtin_ia32_pshuflw(min1,0x4e);
-    min1=__builtin_ia32_pminsw128(temp1,min1);
-    temp1=__builtin_ia32_pshuflw(min1,0xb1);
-    min1=__builtin_ia32_pminsw128(temp1,min1);
+    __v8h temp1=(__v8h)_mm_shuffle_epi32((__m128i)in,0x4e);
+    auto min1=_mm_min_epi16(temp1,in);
+    temp1=_mm_shufflelo_epi16(min1,0x4e);
+    min1=_mm_min_epi16(temp1,min1);
+    temp1=_mm_shufflelo_epi16(min1,0xb1);
+    min1=_mm_min_epi16(temp1,min1);
     auto out=min1[0];
 #ifndef NDEBUG
     unsigned short test=in[0];
@@ -120,8 +120,8 @@ static std::pair<int,int> filter(const Ripples_Mapper_Output_Interface &out_ifc,
         __v8hu second_half_before_inclusive=(second_half_before_raw&exlusive_count_extract_mask)+ second_half_before_included_flag;
         __v8hu acceptor_par=all_muts-second_half_before_inclusive+first_half_exclusive;
         __v8hu donor_par=second_half_before_inclusive-first_half_exclusive;
-        int donor_pass=__builtin_ia32_pmovmskb128((__v16b)(donor_par<threshold_par_vec));
-        int acceptor_pass=__builtin_ia32_pmovmskb128((__v16b)(acceptor_par<threshold_par_vec));
+        int donor_pass=_mm_movemask_epi8((__v16b)(donor_par<threshold_par_vec));
+        int acceptor_pass=_mm_movemask_epi8((__v16b)(acceptor_par<threshold_par_vec));
 #ifndef NDEBUG
         auto end_idx=std::min(8,idx_end-idx_start);
         for (int indi_idx=0; indi_idx<end_idx; indi_idx++) {
@@ -149,11 +149,11 @@ static std::pair<int,int> filter(const Ripples_Mapper_Output_Interface &out_ifc,
 #endif
         if (donor_pass) {
             push_val(donor_filtered_idx, donor_filtered_par_score, idx_start, donor_pass, donor_par);
-            donor_min_par_vec=__builtin_ia32_pminsw128(donor_min_par_vec,(__v8h)donor_par);
+            donor_min_par_vec=_mm_min_epi16(donor_min_par_vec,(__v8h)donor_par);
         }
         if (acceptor_pass) {
             push_val(acceptor_filtered_idx, acceptor_filtered_par_score, idx_start, acceptor_pass, acceptor_par);
-            acceptor_min_par_vec=__builtin_ia32_pminsw128(acceptor_min_par_vec,(__v8h)acceptor_par);
+            acceptor_min_par_vec=_mm_min_epi16(acceptor_min_par_vec,(__v8h)acceptor_par);
         }
         assert(donor_idx_debug.size()==donor_filtered_idx.size());
         assert(acceptor_idx_debug.size()==acceptor_filtered_idx.size());
@@ -173,15 +173,15 @@ static std::pair<int,int> filter(const Ripples_Mapper_Output_Interface &out_ifc,
     acceptor_par&=exlusive_count_extract_mask;
     donor_par|=load_mask;
     donor_par&=exlusive_count_extract_mask;
-    int donor_pass=__builtin_ia32_pmovmskb128((__v16b)(donor_par<threshold_par_vec));
-    int acceptor_pass=__builtin_ia32_pmovmskb128((__v16b)(acceptor_par<threshold_par_vec));
+    int donor_pass=_mm_movemask_epi8((__v16b)(donor_par<threshold_par_vec));
+    int acceptor_pass=_mm_movemask_epi8((__v16b)(acceptor_par<threshold_par_vec));
     if (donor_pass) {
         push_val(donor_filtered_idx, donor_filtered_par_score, idx_start, donor_pass, donor_par);
-        donor_min_par_vec=__builtin_ia32_pminsw128(donor_min_par_vec,(__v8h)donor_par);
+        donor_min_par_vec=_mm_min_epi16(donor_min_par_vec,(__v8h)donor_par);
     }
     if (acceptor_pass) {
         push_val(acceptor_filtered_idx, acceptor_filtered_par_score, idx_start, acceptor_pass, acceptor_par);
-        acceptor_min_par_vec=__builtin_ia32_pminsw128(acceptor_min_par_vec,(__v8h)acceptor_par);
+        acceptor_min_par_vec=_mm_min_epi16(acceptor_min_par_vec,(__v8h)acceptor_par);
     }
     auto donor_min_par=min_8(donor_min_par_vec);
     auto acceptor_min_par=min_8(acceptor_min_par_vec);
